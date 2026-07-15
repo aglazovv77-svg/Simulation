@@ -1,42 +1,32 @@
 package com.gmail.a.glazovv77.core.entity;
 
-import com.gmail.a.glazovv77.core.world.Coords;
-import com.gmail.a.glazovv77.pathfinding.PathFinder;
+import com.gmail.a.glazovv77.core.world.Coordinates;
 import com.gmail.a.glazovv77.core.world.World;
-
-import java.util.Set;
 
 public class Predator extends Creature {
 
+    public static final int PREDATOR_HP = 50;
+    public static final int PREDATOR_SPEED = 3;
+    public static final int PREDATOR_ATTACK = 10;
+
     private final int attackDamage;
 
-    public Predator(Coords coords, int healthPoints, int speed, PathFinder pathFinder, World world, int attackDamage) {
-        super(coords, healthPoints, speed, pathFinder, world);
-        this.attackDamage = attackDamage;
-    }
-
-    public int getAttackDamage() {
-        return attackDamage;
-    }
-
-    @Override
-    public Coords makeMove(Set<Coords> availableCells) {
-
-        Coords bestCoordsHerbivore = findClosestEntityByClass(availableCells, Herbivore.class);
-
-        return moveTowardsTarget(
-                bestCoordsHerbivore,
-                availableCells,
-                (neighbor, entity, target) ->
-                        neighbor.equals(target) ||
-                                entity == null ||
-                                entity instanceof Herbivore
-        );
+    public Predator(Coordinates coordinates) {
+        super(coordinates, Herbivore.class);
+        this.healthPoints = PREDATOR_HP;
+        this.speed = PREDATOR_SPEED;
+        this.attackDamage = PREDATOR_ATTACK;
     }
 
     @Override
-    protected boolean isCellAvailableForMove(Coords coords, World world) {
-        Entity entity = world.getEntity(coords);
-        return entity == null || entity instanceof Herbivore;
+    protected void interact(Coordinates targetCoordinates, World world) {
+
+        Entity entity = world.getEntity(targetCoordinates);
+        if (entity instanceof Herbivore herbivore) {
+            herbivore.takeDamage(attackDamage);
+            if (herbivore.getHealthPoints() <= 0) {
+                world.removeEntity(targetCoordinates);
+            }
+        }
     }
 }

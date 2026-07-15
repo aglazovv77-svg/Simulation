@@ -1,16 +1,10 @@
 package com.gmail.a.glazovv77.rendering;
 
-import com.gmail.a.glazovv77.core.world.Coords;
-import com.gmail.a.glazovv77.core.config.GameConfig;
+import com.gmail.a.glazovv77.core.world.Coordinates;
 import com.gmail.a.glazovv77.core.entity.Entity;
 import com.gmail.a.glazovv77.core.world.World;
 
-import java.util.Map;
-
-/*
-Класс отвечает за отрисовку мира в консоли
- */
-public class ConsoleRenderer implements IRenderer {
+public class ConsoleRenderer implements Renderer {
 
     private final World world;
 
@@ -18,45 +12,31 @@ public class ConsoleRenderer implements IRenderer {
         this.world = world;
     }
 
-    // Отрисовывает текущее состояние мира в консоли
     @Override
     public void render() {
-        // Очищаем консоль правильно
+
+        int rowCount = world.getRowCount();
+        int columnCount = world.getColumnCount();
+
         System.out.print("\033[2J\033[H");  // Очистить весь экран и вернуть курсор
         System.out.flush();
 
-        // Получение подсвеченных клеток
-        Map<Coords, String> highlights = world.getHighlightedCells();
-
-        for (int row = GameConfig.WORLD_HEIGHT; row >= 1; row--) {
+        for (int row = rowCount; row >= 1; row--) {
             StringBuilder line = new StringBuilder();
 
-            for (int col = GameConfig.WORLD_WIDTH; col >= 1; col--) {
-                Coords coords = new Coords(row, col);
+            for (int col = columnCount; col >= 1; col--) {
+                Coordinates coordinates = new Coordinates(row, col);
 
-                String cellSprite = world.isCellEmpty(coords)
+                String cellSprite = world.isCellEmpty(coordinates)
                         ? "⬛"
-                        : getEntitySprite(world.getEntity(coords));
+                        : getEntitySprite(world.getEntity(coordinates));
 
-                // Проверяем подсветку и применяем цвет
-                if (highlights.containsKey(coords)) {
-                    String type = highlights.get(coords);
-
-                    cellSprite = switch (type) {
-                        case "attack" -> "\u001B[41m%s\u001B[0m".formatted(cellSprite); // Красный фон
-                        case "eat" -> "\u001B[42m%s\u001B[0m".formatted(cellSprite);    // Зеленый фон
-                        default -> cellSprite;
-                    };
-                }
                 line.append(cellSprite);
             }
             System.out.println(line);
         }
         System.out.println("----------------------------------------------------------");
 
-
-        // ОЧИЩАЕМ ПОДСВЕТКУ ПОСЛЕ ОТРИСОВКИ
-        world.clearHighlights();
     }
 
     // Возвращает Unicode-символ для конкретного типа сущности

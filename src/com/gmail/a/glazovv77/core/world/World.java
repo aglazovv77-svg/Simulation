@@ -1,113 +1,94 @@
 package com.gmail.a.glazovv77.core.world;
 
-import com.gmail.a.glazovv77.factory.EntityFactory;
-import com.gmail.a.glazovv77.core.config.GameConfig;
 import com.gmail.a.glazovv77.core.entity.*;
 
 import java.util.*;
 
-/*
-Класс является центральным хранилищем игрового мира.
-Управляет всеми сущностями (существами, травой, деревьями, камнями),
-их координатами и предоставляет API для взаимодействия с игровой картой
- */
 public class World {
 
-    private final Map<Coords, Entity> entities = new HashMap<>();
-    private final Map<Coords, String> highlightedCells = new HashMap<>();
+    private final int columnCount;
+    private final int rowCount;
 
-    // Размещает сущность на карте по указанным координатам.
-    public void setEntity(Coords coords, Entity entity) {
-        entity.setCoords(coords);
-        entities.put(coords, entity);
+    private final Map<Coordinates, Entity> entities = new HashMap<>();
+
+    public World(int columnCount, int rowCount) {
+        this.columnCount = columnCount;
+        this.rowCount = rowCount;
     }
 
-    // Удаляет сущность
-    public void removeEntity(Coords coords) {
+    public int getColumnCount() {
+        return columnCount;
+    }
+
+    public int getRowCount() {
+        return rowCount;
+    }
+
+    public void setEntity(Coordinates coordinates, Entity entity) {
+        validate(coordinates);
+        entities.put(coordinates, entity);
+    }
+
+    public void removeEntity(Coordinates coords) {
+        validate(coords);
         entities.remove(coords);
     }
 
-    // Перемещает сущность с одной клетки на другую
-    public void moveEntity(Coords from, Coords to) {
+    public void moveEntity(Coordinates from, Coordinates to) {
+        validate(from);
+        validate(to);
+
         Entity entity = getEntity(from);
 
         if (entity == null) {
             return;
+        }
+        if(entity instanceof Creature creature) {
+            creature.setCoordinates(to);
         }
 
         removeEntity(from);
         setEntity(to, entity);
     }
 
-    // Свободна ли клетка
-    public boolean isCellEmpty(Coords coords) {
+    public boolean isCellEmpty(Coordinates coords) {
+        validate(coords);
         return !entities.containsKey(coords);
     }
 
-    // Возвращает сущность, находящуюся на указанных координатах
-    public Entity getEntity(Coords coords) {
+    public Entity getEntity(Coordinates coords) {
+        validate(coords);
         return entities.get(coords);
     }
 
-    // коллекция существ с координатами
-    public Set<Map.Entry<Coords, Entity>> getEntries() {
+    public Set<Map.Entry<Coordinates, Entity>> getEntries() {
         return Collections.unmodifiableSet(entities.entrySet());
     }
 
-    // Первоначальная расстановка всех сущностей на карте при создании мира
-    public void setupEntitiesPosition(EntityFactory entityFactory) {
-        for (int i = 0; i < GameConfig.INITIAL_HERBIVORE; i++) {
-            Coords coords = getRandomEmptyCoords();
-            setEntity(coords, entityFactory.createHerbivore(coords));
-        }
-
-        for (int i = 0; i < GameConfig.INITIAL_PREDATOR; i++) {
-            Coords coords = getRandomEmptyCoords();
-            setEntity(coords, entityFactory.createPredator(coords));
-        }
-
-        for (int i = 0; i < GameConfig.INITIAL_GRASS; i++) {
-            Coords coords = getRandomEmptyCoords();
-            setEntity(coords, entityFactory.createGrass(coords));
-        }
-
-        for (int i = 0; i < GameConfig.INITIAL_ROCK; i++) {
-            Coords coords = getRandomEmptyCoords();
-            setEntity(coords, entityFactory.createRock(coords));
-        }
-
-        for (int i = 0; i < GameConfig.INITIAL_TREE; i++) {
-            Coords coords = getRandomEmptyCoords();
-            setEntity(coords, entityFactory.createTree(coords));
-        }
-    }
-
-    // Генерирует случайные координаты, гарантируя, что клетка пуста
-    public Coords getRandomEmptyCoords() {
+    public static Coordinates getRandomEmptyCoords(World world) {
         Random random = new Random();
-        Coords coords;
+        Coordinates coords;
 
         do {
-            Integer row = random.nextInt(GameConfig.WORLD_HEIGHT) + 1;
-            Integer col = random.nextInt(GameConfig.WORLD_WIDTH) + 1;
-            coords = new Coords(row, col);
-        } while (!isCellEmpty(coords));
+            int row = random.nextInt(world.getRowCount()) + 1;
+            int column = random.nextInt(world.getColumnCount()) + 1;
+            coords = new Coordinates(row, column);
+        } while (!world.isCellEmpty(coords));
 
         return coords;
     }
 
-    // Возвращает неизменяемую карту подсвеченных клеток
-    public Map<Coords, String> getHighlightedCells() {
-        return Collections.unmodifiableMap(highlightedCells);
+    private void validate(Coordinates coords) {
+        if(coords == null) {
+            throw new IllegalArgumentException("Координата не может быть null");
+        }
+        if(!isWithinBounds(coords)) {
+            throw new IllegalArgumentException("Координата за пределами карты: " + coords);
+        }
     }
 
-    // Добавляет клетку в список подсвеченных с указанием типа подсветки
-    public void highlight(Coords cell, String type) {
-        highlightedCells.put(cell, type);
-    }
-
-// Очищает все подсветки
-    public void clearHighlights() {
-        highlightedCells.clear();
+    public boolean isWithinBounds(Coordinates coords) {
+        return coords.row() > 0 && coords.row() <= rowCount &&
+                coords.column() > 0 && coords.column() <= columnCount;
     }
 }

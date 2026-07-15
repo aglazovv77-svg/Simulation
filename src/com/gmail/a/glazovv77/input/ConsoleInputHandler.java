@@ -2,20 +2,16 @@ package com.gmail.a.glazovv77.input;
 
 import java.util.Scanner;
 
-/*
-Класс отвечает за обработку пользовательского ввода
- */
-public class ConsoleInputHandler implements IInputHandler {
+public class ConsoleInputHandler implements InputHandler {
 
     private static final String NEXT_STEP = "N";
-    private static final String INFINITY = "I";
+    private static final String START = "I";
     private static final String PAUSE = "P";
     private static final String RESUME = "R";
     private static final String QUIT = "Q";
 
     private final Scanner scanner;
 
-    // Конструктор получает Scanner извне (внедрение зависимости)
     public ConsoleInputHandler() {
         this.scanner = new Scanner(System.in);
     }
@@ -31,8 +27,8 @@ public class ConsoleInputHandler implements IInputHandler {
     }
 
     @Override
-    public boolean isInfinity(String command) {
-        return INFINITY.equals(command);
+    public boolean isStart(String command) {
+        return START.equals(command);
     }
 
     @Override

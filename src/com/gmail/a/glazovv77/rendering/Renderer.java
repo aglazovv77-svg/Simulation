@@ -1,6 +1,6 @@
 package com.gmail.a.glazovv77.rendering;
 
-public interface IRenderer {
+public interface Renderer {
 
     void render();
 }
