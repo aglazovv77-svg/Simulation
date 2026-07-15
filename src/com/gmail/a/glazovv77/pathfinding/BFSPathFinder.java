@@ -39,7 +39,7 @@ public class BFSPathFinder implements PathFinder {
 
             Entity entity = world.getEntity(current);
             if (entity != null && targetClass.isAssignableFrom(entity.getClass())) {
-                return reconstructPath(previous, start, current);
+                return reconstructPath(previous, current);
             }
 
             for (Coordinates direction : DIRECTIONS) {
@@ -67,7 +67,7 @@ public class BFSPathFinder implements PathFinder {
         return List.of();
     }
 
-    private List<Coordinates> reconstructPath(Map<Coordinates, Coordinates> previous, Coordinates start, Coordinates target) {
+    private List<Coordinates> reconstructPath(Map<Coordinates, Coordinates> previous, Coordinates target) {
         List<Coordinates> path = new ArrayList<>();
         Coordinates current = target;
 

@@ -8,5 +8,5 @@ import java.util.*;
 
 public interface PathFinder {
 
-    List<Coordinates> find( Coordinates start, World world, Class<? extends Entity> targetClass);
+    List<Coordinates> find(Coordinates start, World world, Class<? extends Entity> targetClass);
 }
