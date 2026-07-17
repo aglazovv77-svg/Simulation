@@ -5,10 +5,13 @@ import com.gmail.a.glazovv77.core.world.World;
 
 public class BoardCoordinates {
 
-    private BoardCoordinates() {
+    private final World world;
+
+    public BoardCoordinates(World world) {
+        this.world = world;
     }
 
-    public static boolean canShift(World world, Coordinates currentCoordinates, Coordinates shiftCoordinates) {
+    public boolean canShift(Coordinates currentCoordinates, Coordinates shiftCoordinates) {
         int newRow = currentCoordinates.row() + shiftCoordinates.row();
         int newColumn = currentCoordinates.column() + shiftCoordinates.column();
 

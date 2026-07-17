@@ -31,9 +31,9 @@ public class RespawnManager {
 
     public void setupEntitiesPosition() {
 
-        spawn(coordinates ->  entityFactory.createGrass(), INITIAL_GRASS);
-        spawn(coordinates ->  entityFactory.createRock(), INITIAL_ROCK);
-        spawn(coordinates ->  entityFactory.createTree(), INITIAL_TREE);
+        spawn(coordinates -> entityFactory.createGrass(), INITIAL_GRASS);
+        spawn(coordinates -> entityFactory.createRock(), INITIAL_ROCK);
+        spawn(coordinates -> entityFactory.createTree(), INITIAL_TREE);
         spawn(entityFactory::createHerbivore, INITIAL_HERBIVORE);
         spawn(entityFactory::createPredator, INITIAL_PREDATOR);
     }
@@ -48,34 +48,25 @@ public class RespawnManager {
 
     protected void respawnEntities() {
 
-        int countGrass = 0;
-        int countHerbivore = 0;
+        int countGrass = countEntities(Grass.class);
+        int countHerbivore = countEntities(Herbivore.class);
+
+        if (countGrass <= GRASS_SPAWN_THRESHOLD) {
+            spawn(coordinates -> entityFactory.createGrass(), INITIAL_GRASS - countGrass);
+        }
+        if (countHerbivore <= HERBIVORE_SPAWN_THRESHOLD) {
+            spawn(entityFactory::createHerbivore, INITIAL_HERBIVORE - countHerbivore);
+        }
+    }
+
+    private int countEntities(Class<? extends Entity> entityClass) {
+        int count = 0;
 
         for (var entry : world.getEntries()) {
-            Entity entity = entry.getValue();
-            if (entity instanceof Grass) {
-                countGrass++;
-            }
-            if (entity instanceof Herbivore) {
-                countHerbivore++;
+            if (entityClass.isInstance(entry.getValue())) {
+                count++;
             }
         }
-        int grassToAdd = INITIAL_GRASS - countGrass;
-        if (countGrass <= GRASS_SPAWN_THRESHOLD) {
-            for (int i = 0; i < grassToAdd; i++) {
-                Coordinates coords = World.getRandomEmptyCoords(world);
-                Grass grass = entityFactory.createGrass();
-                world.setEntity(coords, grass);
-            }
-
-        }
-        int herbivoreToAdd = INITIAL_HERBIVORE - countHerbivore;
-        if (countHerbivore <= HERBIVORE_SPAWN_THRESHOLD) {
-            for (int i = 0; i < herbivoreToAdd; i++) {
-                Coordinates coords = World.getRandomEmptyCoords(world);
-                Herbivore herbivore = entityFactory.createHerbivore(coords);
-                world.setEntity(coords, herbivore);
-            }
-        }
+        return count;
     }
 }

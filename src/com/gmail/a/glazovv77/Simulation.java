@@ -3,20 +3,20 @@ package com.gmail.a.glazovv77;
 import com.gmail.a.glazovv77.core.world.World;
 import com.gmail.a.glazovv77.input.InputHandler;
 import com.gmail.a.glazovv77.logic.Action;
+import com.gmail.a.glazovv77.rendering.Renderer;
 
 import java.io.IOException;
 import java.util.List;
 
 public class Simulation {
 
-    private static final String NEXT_STEP = "N";
-    private static final String START = "I";
-    private static final String PAUSE = "P";
-    private static final String RESUME = "R";
-    private static final String QUIT = "Q";
+    private static final int SLEEP_TIME = 1000;
+    private static final int PAUSE_SLEEP_TIME = 200;
 
     private final World world;
     private final InputHandler inputHandler;
+    private final Renderer renderer;
+
     private final List<Action> initActions;
     private final List<Action> turnActions;
 
@@ -24,49 +24,45 @@ public class Simulation {
     private boolean running = true;
     private boolean exit = false;
 
-    public Simulation(World world, InputHandler inputHandler, List<Action> initActions, List<Action> turnActions) {
+    public Simulation(World world, InputHandler inputHandler, Renderer renderer, List<Action> initActions, List<Action> turnActions) {
         this.world = world;
         this.inputHandler = inputHandler;
+        this.renderer = renderer;
         this.initActions = initActions;
         this.turnActions = turnActions;
     }
 
     public void printGreeting() {
-        System.out.printf("""
-                Вас приветствует мир Симуляции!\s
-                Нажмите [%s] для рендеринга одного хода,
-                либо [%s] для старта бесконечного цикла!\s
-                """, NEXT_STEP, START);
+        renderer.showGreeting();
     }
 
-
     public void nextTurn() {
-       for(Action turnAction : turnActions) {
-           turnAction.execute(world);
-       }
-        System.out.printf("Счётчик ходов: %d%n", turnCount);
-       turnCount++;
+        for (Action turnAction : turnActions) {
+            turnAction.execute(world);
+        }
+        renderer.showTurnCount(turnCount);
+        turnCount++;
     }
 
     @SuppressWarnings("BusyWait")
     public void startSimulation() {
         running = true;
-        System.out.println("Запуск бесконечной симуляции...");
+        renderer.showStartSimulationMessage();
 
-        while (true){
+        while (true) {
             try {
                 if (System.in.available() > 0) {
                     String command = inputHandler.readCommand();
 
                     if (inputHandler.isPause(command)) {
                         pauseSimulation();
-                        if(exit) {
+                        if (exit) {
                             return;
                         }
                     }
 
-                    if(inputHandler.isQuit(command)) {
-                        System.out.println("Вы вышли из симуляции!");
+                    if (inputHandler.isQuit(command)) {
+                        renderer.showExitMessage();
                         exit = true;
                         return;
                     }
@@ -77,11 +73,10 @@ public class Simulation {
 
             if (running) {
                 nextTurn();
-                System.out.printf("Нажмите [%s] для паузы\n", PAUSE);
-                System.out.printf("Или нажмите [%s] для выхода\n", QUIT);
+                renderer.showPausePrompt();
 
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(SLEEP_TIME);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     throw new RuntimeException("Симуляция прервана", e);
@@ -94,24 +89,24 @@ public class Simulation {
     public void pauseSimulation() {
         nextTurn();
         running = false;
-        System.out.println("=== ПАУЗА ===");
-        System.out.printf("Нажмите [%s] для продолжения\n", RESUME);
-        System.out.printf("Или нажмите [%s] для выхода\n", QUIT);
+        renderer.showPauseMenu();
 
         while (!running) {
             try {
                 if (System.in.available() > 0) {
                     String command = inputHandler.readCommand();
 
-                    if(inputHandler.isQuit(command)) {
-                        System.out.println("Вы вышли из симуляции!");
+                    if (inputHandler.isQuit(command)) {
+                        renderer.showExitMessage();
                         exit = true;
                         return;
-                    } if (inputHandler.isResume(command)) {
+                    }
+                    if (inputHandler.isResume(command)) {
                         running = true;
-                        System.out.println("Симуляция продолжена!");
+                        renderer.showResumeMessage();
                     } else {
-                        System.out.printf("Неверная команда. Нажмите [%s] для продолжения\n", RESUME);
+                        renderer.showInvalidCommand();
+                        renderer.showPauseMenu();
                     }
                 }
             } catch (IOException e) {
@@ -119,7 +114,7 @@ public class Simulation {
             }
 
             try {
-                Thread.sleep(200);
+                Thread.sleep(PAUSE_SLEEP_TIME);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new RuntimeException("Симуляция прервана", e);
@@ -128,22 +123,19 @@ public class Simulation {
     }
 
     public void start() {
-       for(Action initAction : initActions) {
-           initAction.execute(world);
-       }
-        while (true) {
+        for (Action initAction : initActions) {
+            initAction.execute(world);
+        }
+        while (!exit) {
             printGreeting();
             String command = inputHandler.readCommand();
 
             if (inputHandler.isNextStep(command)) {
                 nextTurn();
-            } else if (inputHandler.isStart(command)) {
+            } else if (inputHandler.isStart(command) && !exit) {
                 startSimulation();
-                if(exit) {
-                    return;
-                }
             } else {
-                System.out.printf("Неверная команда! Введите [%s] или [%s]\n", NEXT_STEP, START);
+                renderer.showInvalidStartCommand();
             }
         }
     }

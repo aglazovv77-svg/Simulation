@@ -9,7 +9,7 @@ import java.util.*;
 
 public class BFSPathFinder implements PathFinder {
 
-    private static final List<Coordinates> DIRECTIONS = List.of(
+    private static final List<Coordinates> SHIFTS = List.of(
             new Coordinates(1, 0),
             new Coordinates(1, -1),
 
@@ -25,6 +25,8 @@ public class BFSPathFinder implements PathFinder {
 
     @Override
     public List<Coordinates> find(Coordinates start, World world, Class<? extends Entity> targetClass) {
+
+        BoardCoordinates boardCoordinates = new BoardCoordinates(world);
 
         Queue<Coordinates> queue = new ArrayDeque<>();
         Set<Coordinates> visited = new HashSet<>();
@@ -42,8 +44,8 @@ public class BFSPathFinder implements PathFinder {
                 return reconstructPath(previous, current);
             }
 
-            for (Coordinates direction : DIRECTIONS) {
-                if (!BoardCoordinates.canShift(world, current, direction)) {
+            for (Coordinates direction : SHIFTS) {
+                if (!boardCoordinates.canShift(current, direction)) {
                     continue;
                 }
 

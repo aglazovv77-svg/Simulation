@@ -13,6 +13,5 @@ public class RespawnAction implements Action {
     @Override
     public void execute(World world) {
         respawnManager.respawnEntities();
-
     }
 }

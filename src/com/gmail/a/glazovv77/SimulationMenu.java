@@ -12,8 +12,9 @@ import java.util.List;
 
 public class SimulationMenu {
 
-    public static Simulation create(World world) {
+    public static Simulation create() {
 
+        World world = new World(20, 20);
         Renderer renderer = new ConsoleRenderer(world);
 
         EntityFactory entityFactory = new EntityFactory();
@@ -32,6 +33,6 @@ public class SimulationMenu {
                 new RenderAction(renderer)
         );
 
-        return new Simulation(world, iInputHandler, initAction, turnAction);
+        return new Simulation(world, iInputHandler, renderer, initAction, turnAction);
     }
 }
