@@ -44,21 +44,8 @@ public class ConsoleRenderer implements Renderer {
 
     }
 
-    // Возвращает Unicode-символ для конкретного типа сущности
-    private String selectUnicodeSpriteForEntity(Entity entity) {
-        return switch ((entity.getClass().getSimpleName())) {
-            case "Herbivore" -> "🐇";
-            case "Predator" -> "🐺";
-            case "Grass" -> "🌿";
-            case "Rock" -> "🪨";
-            case "Tree" -> "🌲";
-            default -> "";
-        };
-    }
-
-    // Обёртка для получения спрайта сущности
     private String getEntitySprite(Entity entity) {
-        return selectUnicodeSpriteForEntity(entity);
+        return entity.getSprite();
     }
 
     @Override
