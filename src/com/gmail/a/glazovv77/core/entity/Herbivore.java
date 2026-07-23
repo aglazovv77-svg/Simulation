@@ -18,4 +18,9 @@ public class Herbivore extends Creature {
     protected void interact(Coordinates targetCoordinates, World world) {
         world.removeEntity(targetCoordinates);
     }
+
+    @Override
+    public String getSprite() {
+        return "🐇";
+    }
 }

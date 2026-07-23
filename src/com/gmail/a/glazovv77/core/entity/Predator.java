@@ -29,4 +29,9 @@ public class Predator extends Creature {
             }
         }
     }
+
+    @Override
+    public String getSprite() {
+        return "🐺";
+    }
 }
